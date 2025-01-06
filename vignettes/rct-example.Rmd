@@ -106,7 +106,7 @@ num_gfr <- 100
 num_burnin <- 100
 num_mcmc <- 3000
 bcf_params <- list(
-    propensity_covariate = 'mu', 
+    propensity_covariate = 'none', 
     cutpoint_grid_size = 100, 
     sample_sigma_leaf_tau = T, 
     sample_sigma_leaf_mu = T, 
@@ -115,7 +115,6 @@ bcf_params <- list(
     random_seed = random_seed
 )
 bcf_model <- bcf(X_train = covariate_df, Z_train = Z, y_train = y, 
-                 pi_train = rep(0.5,length(y)), 
                  num_gfr = num_gfr, 
                  num_burnin = num_burnin, num_mcmc = num_mcmc, 
                  params = bcf_params)
