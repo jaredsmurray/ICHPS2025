@@ -27,16 +27,16 @@ knitr::opts_knit$set(root.dir = "../")
 
 ## Introduction
 
-In this vignette we re-analyze data from study 6 in ["A synergistic mindsets intervention protects adolescents from stress (@yeager2022synergistic)"](https://www.nature.com/articles/s41586-022-04907-7). The study was a randomized controlled trial of a light-touch synergistic mindsets intervention. Variables include:
+In this vignette we re-analyze data from study 6 in ["A synergistic mindsets intervention protects adolescents from stress (\@yeager2022synergistic)"](https://www.nature.com/articles/s41586-022-04907-7). The study was a randomized controlled trial of a light-touch synergistic mindsets intervention. Variables include:
 
-- `testanxiety`: A measure of the student's test anxiety
-- `sex`: 1 if M, 0 if F
-- `stressmindset_baseline`: Pre-treatment stress mindset; lower values indicate positive stress-can-be-enhancing mindsets
-- `fixedmindset_baseline`: Pre-treatment growth/fixed mindset; lower values indicate positive growth mindsets
-- `pss_impute`: A measure of perceived social stress at baseline
-- `fgen_moth`: 1 if the student is a first-generation college student on their mother's side
-- `fgen_fath`: 1 if the student is a first-generation college student on their father's side
-- `ses`: A measure of socioeconomic status
+-   `testanxiety`: A measure of the student's test anxiety
+-   `sex`: 1 if M, 0 if F
+-   `stressmindset_baseline`: Pre-treatment stress mindset; lower values indicate positive stress-can-be-enhancing mindsets
+-   `fixedmindset_baseline`: Pre-treatment growth/fixed mindset; lower values indicate positive growth mindsets
+-   `pss_impute`: A measure of perceived social stress at baseline
+-   `fgen_moth`: 1 if the student is a first-generation college student on their mother's side
+-   `fgen_fath`: 1 if the student is a first-generation college student on their father's side
+-   `ses`: A measure of socioeconomic status
 
 The outcome `anxiety` is a measure of anxiety (GAD-7).
 
@@ -63,7 +63,7 @@ file_path <- file.path(here(), "data/rct/synergistic_study6.csv")
 df <- read.csv(file_path)
 ```
 
-And unpack the data into BCF components: outcome, treatment, and covariates. 
+And unpack the data into BCF components: outcome, treatment, and covariates.
 
 We also create two new variables from the baseline fixed and stress mindset scores (where higher scores correspond to more fixed mindsets and less stress-can-be-enhancing mindsets) by adding and multiplying them. Since the hypothesis was that the treatment would be most effective for students with poor growth and stress mindsets, adding these coordinates will allow the trees to make one split to isolate groups that are high or low on both mindset scores. Feature engineering like this can be very helpful when using tree-based methods in general, especially when the sample size is small.
 
@@ -89,12 +89,12 @@ $$
 y_i = \mu(x_i) + \tau(x_i)z_i + \epsilon_i,\ \ \epsilon_i\sim N(0,\sigma^2)
 $$
 
-with 100 "warm-start" iterations and 3000 MCMC iterations after 100 burn-in iterations. Since this is a randomized controlled trial we omit a fitted propensity score. 
+with 100 "warm-start" iterations and 3000 MCMC iterations after 100 burn-in iterations. Since this is a randomized controlled trial we omit a fitted propensity score.
 
-We also tweak a couple of the BCF defaults: 
+We also tweak a couple of the BCF defaults:
 
-* We turn off adaptive coding of the treatment dummies, and 
-* we increase the probability that a heterogeneity tree splits at least once (`alpha_tau` from 0.25 to 0.95).
+-   We turn off adaptive coding of the treatment dummies, and
+-   we increase the probability that a heterogeneity tree splits at least once (`alpha_tau` from 0.25 to 0.95).
 
 The BCF defaults were developed for scenarios with moderate to strong confounding and weak prior evidence of heterogeneous effects. Here we have a randomized trial, and lots of prior evidence and theory that suggests effects should be heterogeneous.
 
@@ -125,6 +125,7 @@ t1 - t0
 ## Analysis
 
 First some high-level diagnostics using `coda`:
+
 ```{r}
 coda_s2 = mcmc(bcf_model$sigma2_samples)
 summary(coda_s2)
@@ -165,7 +166,7 @@ abline(h=0, lty=2, col='red')
 
 ### Average treatment effects
 
-Extract and examine the posterior distribution of the ATE. There is little evidence to suggest a negative (beneficial) treatment effect overall. But this doesn't mean that effects are zero everywhere! 
+Extract and examine the posterior distribution of the ATE. There is little evidence to suggest a negative (beneficial) treatment effect overall. But this doesn't mean that effects are zero everywhere!
 
 ```{r}
 ate_dist <- colMeans(bcf_model$tau_hat_train)
@@ -200,7 +201,7 @@ subgroup_defs = covariate_df %>%
 
 subgroup_ates = subgroup_average_posterior(t(tauhat_posterior),subgroup_defs$doublemindset)
 ggplot(aes(x=value, color=subgroup), data=gather(subgroup_ates, key="subgroup"))+geom_density()
-ggplot(aes(x=value, color=factor(subgroup=="Stress.Bad.Stress.Bad")), data=gather(subgroup_ates, key="subgroup"))+geom_density()
+ggplot(aes(x=value, color=factor(subgroup=="Stress.Bad.Fixed.Bad")), data=gather(subgroup_ates, key="subgroup"))+geom_density()
 
 coda_subate = mcmc(subgroup_ates)
 summary(coda_subate)
@@ -230,7 +231,7 @@ colMeans(fgen_db_subgroup_ates<0)
 
 #### CART Subgroup Search
 
-We can search over possible subgroups by "fitting the fit" with a CART tree -- we get back a set of subgroups that (approximately) maximally separate their subgroup ATEs. 
+We can search over possible subgroups by "fitting the fit" with a CART tree -- we get back a set of subgroups that (approximately) maximally separate their subgroup ATEs.
 
 ```{r}
 treefit = rpart(rowMeans(tauhat_posterior)~., data=covariate_df,
@@ -246,8 +247,7 @@ apply(subgroup_ates, 2, function(x) quantile(x, c(0.025, 0.1, 0.5, 0.9, 0.975)))
 
 ```
 
-Deeper trees better approximate $\tau$ at the cost of complexity and a loss of
-interpretability.
+Deeper trees better approximate $\tau$ at the cost of complexity and a loss of interpretability.
 
 ```{r}
 treefit = rpart(rowMeans(tauhat_posterior)~., data=covariate_df,
