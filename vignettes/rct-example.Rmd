@@ -115,7 +115,8 @@ bcf_params <- list(
     random_seed = random_seed
 )
 bcf_model <- bcf(X_train = covariate_df, Z_train = Z, y_train = y, 
-                 pi_train = rep(0.5,length(y)), num_gfr = num_gfr, 
+                 pi_train = rep(0.5,length(y)), 
+                 num_gfr = num_gfr, 
                  num_burnin = num_burnin, num_mcmc = num_mcmc, 
                  params = bcf_params)
 t1 <- Sys.time()
@@ -286,7 +287,7 @@ gf = additive_summary(ff, bcf_model$tau_hat_train, df=model_df, fast=FALSE)
 additive_summary_plot(gf)
 additive_summary_triangle_plot(gf)
 
-factor_post = get_additive_factor_posterior(gf)
+
 
 gfpm = gam(rowMeans(bcf_model$tau_hat_train) ~ factor(fgen_moth) + factor(fgen_fath) +
   factor(ses) + factor(sex) + factor(ses) +
@@ -295,6 +296,15 @@ gfpm = gam(rowMeans(bcf_model$tau_hat_train) ~ factor(fgen_moth) + factor(fgen_f
 gf = additive_summary(ff, bcf_model$tau_hat_train, df=covariate_df, fast=FALSE)
 additive_summary_plot(gf)
 additive_summary_triangle_plot(gf)
+```
+
+Looking at (approximate) partial effects of categorical variables:
+```{r message=FALSE, warning=FALSE}
+factor_post = get_additive_factor_posterior(gf)
+factor_post %>% 
+  group_by(term) %>% 
+  summarize(est = mean(post), lo=quantile(post, 0.05), hi=quantile(post, 0.95))
+ggplot(aes(x=post), data=factor_post) + geom_density() + facet_grid(~term)
 ```
 
 And again, summarizing by the sum of the two mindset scores instead of the individual scores
