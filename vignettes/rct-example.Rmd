@@ -135,7 +135,7 @@ acfplot(coda_s2)
 effectiveSize(coda_s2)
 ```
 
-Extract observation-level outputs of the model: Fitted values, predicted values under control, and the estimated treatment effects.
+Extract observation-level outputs of the model: Fitted values, predicted values under control, and the *standardized* estimated treatment effects.
 
 ```{r}
 yhat_posterior <- bcf_model$y_hat_train
@@ -299,6 +299,7 @@ additive_summary_triangle_plot(gf)
 ```
 
 Looking at (approximate) partial effects of categorical variables:
+
 ```{r message=FALSE, warning=FALSE}
 factor_post = get_additive_factor_posterior(gf)
 factor_post %>% 
