@@ -1,5 +1,5 @@
 ---
-title: "Demo of Bayesian Causal Forests on a Randomized Controlled Trial"
+title: "Demo of Bayesian Causal Forests in a Randomized Controlled Trial"
 author: "Jared Murray, Drew Herren"
 date: "`r Sys.Date()`"
 bibliography: bcf_ichps.bib
@@ -105,19 +105,26 @@ t0 <- Sys.time()
 num_gfr <- 100
 num_burnin <- 100
 num_mcmc <- 3000
-bcf_params <- list(
+
+general_params <- list(
     propensity_covariate = 'none', 
-    cutpoint_grid_size = 100, 
+    cutpoint_grid_size = 1000, 
     sample_sigma_leaf_tau = T, 
     sample_sigma_leaf_mu = T, 
     adaptive_coding = F, 
-    alpha_tau = 0.95, 
+    control_coding_init = 0,
+    treated_coding_init = 1,
     random_seed = random_seed
 )
+treatment_effect_forest_params = list(
+  alpha = 0.95
+)
+
 bcf_model <- bcf(X_train = covariate_df, Z_train = Z, y_train = y, 
                  num_gfr = num_gfr, 
                  num_burnin = num_burnin, num_mcmc = num_mcmc, 
-                 params = bcf_params)
+                 general_params = general_params,
+                 treatment_effect_forest_params = treatment_effect_forest_params)
 t1 <- Sys.time()
 t1 - t0
 ```
